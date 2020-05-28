@@ -48,8 +48,8 @@ app.get("/", function (req, res) {
 
 // });
 
-const routes = require('./routes/router');
-app.use('/', routes);
+// const routes = require('./routes/router');
+// app.use('/', routes);
 
 // Change the 404 message modifing the middleware
 app.use(function (req, res, next) {
