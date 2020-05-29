@@ -12,8 +12,8 @@ const morgan = require("morgan");
 const server = require("http").Server(app);
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcrypt");
-const MongoClient = require('mongodb').MongoClient;
-const mongoose = require('mongoose');
+const MongoClient = require("mongodb").MongoClient;
+const mongoose = require("mongoose");
 
 const User = require("./models/user");
 
@@ -23,20 +23,25 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use(cookieSession({
-  name: 'session',
-  keys: ['key1', 'key2']
-}))
+app.use(
+  cookieSession({
+    name: "session",
+    keys: ["key1", "key2"],
+  })
+);
 
 // connet to mongodb
-mongoose.connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.DB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 const db = mongoose.connection;
 
 //handle mongo error
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function () {
-  console.log("we're connectedto mongo!")
+db.on("error", console.error.bind(console, "connection error:"));
+db.once("open", function () {
+  console.log("we're connectedto mongo!");
 });
 
 app.get("/", function (req, res) {
@@ -44,54 +49,51 @@ app.get("/", function (req, res) {
 });
 
 app.post("/register", function (req, res) {
-  const { firstName, lastName, email, username, password } = req.body.inputs
-  const hashedPassword = bcrypt.hashSync(password, 10);
-  console.log("Hashed password:", hashedPassword);
-  // console.log("password", password)
+  const { firstName, lastName, email, username, password } = req.body.inputs;
+  // const hashedPassword = bcrypt.hashSync(password, 10);
   const userData = {
     firstName,
     lastName,
     email,
     username,
-    password: hashedPassword,
+    password,
+    // password: hashedPassword,
   };
   User.create(userData, function (error, user) {
     if (error) {
       return error;
     } else {
       req.session.userId = user._id;
-      // console.log("userId",req.session.userId)
       return res.json(user);
     }
-  })
+  });
 });
 
 app.post("/login", function (req, res) {
-  const { username, password } = req.body
-  console.log("password", password)
-  User.findOne({ username: username })
-    .exec((err, user) => {
-      if (err) {
+  const { username, password } = req.body;
+  console.log("password", password);
+  User.findOne({ username: username }).exec((err, user) => {
+    if (err) {
+      return err;
+    }
+    bcrypt.compare(password, user.password, function (err, result) {
+      console.log("result", result);
+      console.log("user.password", user.password);
+      if (result === true) {
+        req.session.userId = user._id;
+        console.log("useId", req.session.userId);
+        return res.json(user);
+      } else {
+        console.log("Not logged in!", user);
         return err;
       }
-      bcrypt.compare(password, user.password, function (err, result) {
-        console.log("result", result)
-        console.log("user.password", user.password)
-        if (result === true) {
-          req.session.userId = user._id;
-          console.log("useId", req.session.userId)
-          return res.json(user)
-        } else {
-          console.log(user)
-          return err;
-        }
-      })
-    })
-})
+    });
+  });
+});
 app.post("/logout", function (req, res) {
   req.session.userId = null;
   return res.json("destroy");
-})
+});
 // User.authenticate(username, password, function (
 //   error,
 //   user
