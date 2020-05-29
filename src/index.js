@@ -88,6 +88,10 @@ app.post("/login", function (req, res) {
       })
     })
 })
+app.post("/logout", function (req, res) {
+  req.session.userId = null;
+  return res.json("destroy");
+})
 // User.authenticate(username, password, function (
 //   error,
 //   user
