@@ -2,7 +2,7 @@
 require("dotenv").config();
 
 // Web server config
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 2468;
 const ENV = process.env.ENV || "development";
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -14,6 +14,8 @@ const cookieSession = require("cookie-session");
 const bcrypt = require("bcrypt");
 const MongoClient = require('mongodb').MongoClient;
 const mongoose = require('mongoose');
+
+const User = require("./models/user");
 
 app.use(morgan("dev"));
 app.use(cors());
@@ -41,12 +43,27 @@ app.get("/", function (req, res) {
   res.send("We out here!");
 });
 
-// app.put("/register", function (req, res) {
-//   const { username, email, password } = req.body
-//   const hashedPassword = bcrypt.hashSync(password, 10);
-//   // console.log("Hashed password:", hashedPassword);
-
-// });
+app.post("/register", function (req, res) {
+  const { firstName, lastName, email, username, password } = req.body.inputs
+  const hashedPassword = bcrypt.hashSync(password, 10);
+  console.log("Hashed password:", hashedPassword);
+  const userData = {
+    firstName,
+    lastName,
+    email,
+    username,
+    password: hashedPassword,
+  };
+  User.create(userData, function (error, user) {
+    if (error) {
+      return error;
+    } else {
+      req.session.userId = user._id;
+      // console.log("userId",req.session.userId)
+      return res.json(user);
+    }
+  })
+});
 
 // const routes = require('./routes/router');
 // app.use('/', routes);
