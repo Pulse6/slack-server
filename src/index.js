@@ -47,6 +47,7 @@ app.post("/register", function (req, res) {
   const { firstName, lastName, email, username, password } = req.body.inputs
   const hashedPassword = bcrypt.hashSync(password, 10);
   console.log("Hashed password:", hashedPassword);
+  // console.log("password", password)
   const userData = {
     firstName,
     lastName,
@@ -64,6 +65,44 @@ app.post("/register", function (req, res) {
     }
   })
 });
+
+app.post("/login", function (req, res) {
+  const { username, password } = req.body
+  console.log("password", password)
+  User.findOne({ username: username })
+    .exec((err, user) => {
+      if (err) {
+        return err;
+      }
+      bcrypt.compare(password, user.password, function (err, result) {
+        console.log("result", result)
+        console.log("user.password", user.password)
+        if (result === true) {
+          req.session.userId = user._id;
+          console.log("useId", req.session.userId)
+          return res.json(user)
+        } else {
+          console.log(user)
+          return err;
+        }
+      })
+    })
+})
+// User.authenticate(username, password, function (
+//   error,
+//   user
+// ) {
+//   if (error || !user) {
+//     const err = new Error("Wrong username or password.");
+//     err.status = 401;
+//     return err;
+//   } else {
+//     req.session.userId = user._id;
+//     console.log("IDDDDDD",req.session.userId)
+//     return res.json(user);
+//   }
+// });
+// });
 
 // const routes = require('./routes/router');
 // app.use('/', routes);
