@@ -44,6 +44,10 @@ db.once("open", function () {
   console.log("we're connectedto mongo!");
 });
 
+const databaseHelperFunctions = require("./routes/helpers")(db);
+
+const chatRoutes = require("./routes/chat");
+
 app.get("/", function (req, res) {
   res.send("We out here!");
 });
