@@ -30,7 +30,7 @@ app.use(
   })
 );
 
-// connet to mongodb
+// connect to mongodb
 mongoose.connect(process.env.DB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -46,7 +46,11 @@ db.once("open", function () {
 
 const databaseHelperFunctions = require("./routes/helpers")(db);
 
+const usersRoutes = require("./routes/users");
 const chatRoutes = require("./routes/chat");
+
+app.use("/users", usersRoutes(databaseHelperFunctions));
+app.use("/chat", chatRoutes(databaseHelperFunctions));
 
 app.get("/", function (req, res) {
   res.send("We out here!");
@@ -98,24 +102,14 @@ app.post("/logout", function (req, res) {
   req.session.userId = null;
   return res.json("destroy");
 });
-// User.authenticate(username, password, function (
-//   error,
-//   user
-// ) {
-//   if (error || !user) {
-//     const err = new Error("Wrong username or password.");
-//     err.status = 401;
-//     return err;
-//   } else {
-//     req.session.userId = user._id;
-//     console.log("IDDDDDD",req.session.userId)
-//     return res.json(user);
-//   }
-// });
-// });
 
-// const routes = require('./routes/router');
-// app.use('/', routes);
+// app.get("/users/", (req, res) => {
+//   const { userId, user } = req.query;
+//   console.log("userId", userId);
+//   console.log("receiver", user);
+
+//   databaseHelperFunctions.findUser(userId, user);
+// });
 
 // Change the 404 message modifing the middleware
 app.use(function (req, res, next) {
