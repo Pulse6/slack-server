@@ -6,11 +6,12 @@ const User = require("../models/user");
 const findUser = user => {
   User.find({ username: { $regex: user } })
     .then(res => {
-      if (res) {
+      if (!res) {
+        return [];
+      } else {
         console.log("ressss", res);
         return res;
       }
-      console.log("data", res);
     })
     .catch(error => console.log(error));
 };
@@ -21,7 +22,10 @@ module.exports = databaseHelperFunctions => {
     const { user } = req.query;
     console.log("receiver", user);
     // databaseHelperFunctions.findUser(userId, user);
-    findUser(user);
+    findUser(user).then(result => {
+      console.log("res from server", result);
+      return res.json(result);
+    });
   });
 
   return router;
